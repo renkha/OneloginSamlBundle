@@ -28,7 +28,6 @@ class SamlController extends Controller
         } else {
             $error = null;
         }
-        print_r("+++++")
         
         $this->get('onelogin_auth')->login($session->get('_security.main.target_path'));
     }
