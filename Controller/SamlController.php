@@ -11,23 +11,25 @@ class SamlController extends Controller
 {
     public function loginAction(Request $request)
     {
-        $session = $request->getSession();
         $authErrorKey = Security::AUTHENTICATION_ERROR;
+        $session = null;
+
+        if ($request->hasSession()) {
+            $session = $request->getSession();
+        }
 
         if ($request->attributes->has($authErrorKey)) {
             $error = $request->attributes->get($authErrorKey);
+            throw new \RuntimeException($error->getMessage());
         } elseif (null !== $session && $session->has($authErrorKey)) {
             $error = $session->get($authErrorKey);
             $session->remove($authErrorKey);
+            $this->get('onelogin_auth')->login($session->get('_security.main.target_path'));
         } else {
             $error = null;
         }
-
-        if ($error) {
-            throw new \RuntimeException($error->getMessage());
-        }
-
-        $this->get('onelogin_auth')->login();
+        
+        $this->get('onelogin_auth')->login($session->get('_security.main.target_path'));
     }
 
     public function metadataAction()
